@@ -1,7 +1,7 @@
 // ConsoleGui.cpp : Diese Datei enthält die Funktion "main". Hier beginnt und endet die Ausführung des Programms.
 //
 
-#include "pch.h"
+
 #include <iostream>
 #include <string>
 #include <vector>    
@@ -169,7 +169,7 @@ int main()
 
 	defaultPage->Text("Logs:");
 
-	LogElement *logs = defaultPage->LogElem("", 3);
+	LogElement *logs = defaultPage->LogElem(3);
 
 	PageElement* pageElement = defaultPage->PageElem("Go to some Page");
 
@@ -182,25 +182,28 @@ int main()
 
 	newPage->Int("Some Other Int", &Integer);
 
-	PageElement* newPageElem = newPage->PageElem("Go To Default");
+	//PageElement* newPageElem = newPage->PageElem("Go To Default");
+
+	newPage->Selection({ "Option 1", "Option 2", "Something else" });
+
 
 	newPage->ReturnElem("Go Back");
-
+	
 	defaultPage->evenStringSize();
 	newPage->evenStringSize();
 
 	pageElement->setTargetPage(newPage);
 
-	newPageElem->setTargetPage(defaultPage);
+	//newPageElem->setTargetPage(defaultPage);
 
 	con.start();
 
-	intElement->setEventHandler([logs](newConsolePrinter::IntElement* el) -> void
+	intElement->setOnValueChange([logs](newConsolePrinter::IntElement* el) -> void
 	{
 		logs->addLog("Value changed to: " + std::to_string(el->getValue()));
 	});
 
-
+	
 	Sleep(5000);
 
 

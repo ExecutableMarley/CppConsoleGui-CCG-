@@ -2,8 +2,6 @@
 //
 
 #include <iostream>
-
-#include <iostream>
 #include <string>
 #include <vector>    
 #include <Windows.h>
@@ -103,6 +101,9 @@ int main()
 
 	//string abc = format("Hallo %s    [%d]", "Welt", 10);
 	//cout << abc << endl;
+
+
+
 #if 0
 	ConsolePrinter con(450, 500);
 
@@ -139,6 +140,7 @@ int main()
 	}
 
 #else
+
 	newConsolePrinter::ConsolePrinter con(53, 30);
 
 	con.setConsoleTitle("Hello World");
@@ -166,7 +168,7 @@ int main()
 
 	defaultPage->Text("Logs:");
 
-	LogElement *logs = defaultPage->LogElem("", 3);
+	LogElement *logs = defaultPage->LogElem(3);
 
 	PageElement* pageElement = defaultPage->PageElem("Go to some Page");
 
@@ -179,7 +181,10 @@ int main()
 
 	newPage->Int("Some Other Int", &Integer);
 
-	PageElement* newPageElem = newPage->PageElem("Go To Default");
+	//PageElement* newPageElem = newPage->PageElem("Go To Default");
+
+	newPage->Selection({ "Option 1", "Option 2", "Something else" });
+
 
 	newPage->ReturnElem("Go Back");
 
@@ -188,16 +193,18 @@ int main()
 
 	pageElement->setTargetPage(newPage);
 
-	newPageElem->setTargetPage(defaultPage);
+	//newPageElem->setTargetPage(defaultPage);
 
 	con.start();
 
-	intElement->setEventHandler([logs](newConsolePrinter::IntElement* el) -> void
+	intElement->setOnValueChange([logs](newConsolePrinter::IntElement* el) -> void
 	{
 		logs->addLog("Value changed to: " + std::to_string(el->getValue()));
 	});
 
+
 	Sleep(5000);
+
 
 	logs->addLog("A");
 	Sleep(2000);
@@ -223,6 +230,7 @@ int main()
 
 	sprintf_s(&screen[0], 100 * 100, "   d  ");
 
+
 	WriteConsoleOutputCharacterA(hConsole, screen, 100 * 100, { 0,0 }, &dwBytesWritten);
 
 	_SMALL_RECT Rect;
@@ -234,5 +242,10 @@ int main()
 	SetConsoleScreenBufferSize(hConsole, { 100, 100 });
 
 	SetConsoleWindowInfo(hConsole, true, &Rect);
+
+
+
 #endif
 }
+
+

@@ -8,14 +8,15 @@
 
 #include <chrono>
 
-// Custom
+// Custom name
 using tpoint = std::chrono::steady_clock::time_point;
 
-
-struct Intervall
+class Intervall
 {
+private:
 	tpoint base;
 	int intervall;
+public:
 
 	Intervall(int x)
 	{
@@ -30,6 +31,7 @@ struct Intervall
 	{
 		return check(intervall);
 	}
+
 	bool check(int time)
 	{
 		if (t_dif(t_now(), base) >= time)
@@ -44,7 +46,7 @@ struct Intervall
 	{
 		intervall = x;
 	}
-
+private:
 	tpoint t_now()
 	{
 		return std::chrono::steady_clock::now();
@@ -52,6 +54,7 @@ struct Intervall
 
 	long long t_dif(tpoint base, tpoint a)
 	{
-		return std::chrono::duration_cast<std::chrono::milliseconds>(base - a).count();
+		return std::chrono::duration_cast<std::chrono::milliseconds>
+			(base - a).count();
 	}
 };

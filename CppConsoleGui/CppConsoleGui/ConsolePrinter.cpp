@@ -4,6 +4,7 @@
  * @github: github.com/ExecutableMarley
  */
 
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -211,6 +212,24 @@ namespace newConsolePrinter
 		cout << curLine;
 	}
 
+	//[SelectElement]
+
+	void SelectElement::print(ConsolePrinter *printer, bool isSelected)
+	{
+		this->isSelected = isSelected;
+
+		wasActiveElement = isActiveElement;
+
+		string curLine = stateArrow(isSelected) + name + (isActiveElement ? "   [X]" : "      ");
+		
+		curLine.resize(printer->iWidth - 1);
+
+		curLine.append("\n");
+
+		cout << curLine;
+	}
+
+
 
 	//[PageElement]
 
@@ -276,6 +295,13 @@ namespace newConsolePrinter
 	}
 }
 
+//Key code values seems to differ on different operating systems
+enum KeyMap
+{
+	
+};
+
+//We also probably need an enum for colors since these values will likely differ too
 
 
 

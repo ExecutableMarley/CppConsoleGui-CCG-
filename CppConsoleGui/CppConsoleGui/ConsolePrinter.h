@@ -103,8 +103,6 @@ namespace newConsolePrinter
 		bool virtual hasChanged(bool isSelected) = 0;
 		//
 		void virtual changeValue(ConsolePrinter*printer, Action action) = 0;
-
-		//onValueChange()
 		
 		bool hasNext()
 		{
@@ -194,7 +192,7 @@ namespace newConsolePrinter
 		bool isSelected = false;
 
 		//Event Handling
-		std::function<void(BoolElement*)> handler;
+		std::function<void(BoolElement*)> onValueChange;
 
 		std::function<void(BoolElement*)> onAction;
 
@@ -236,8 +234,8 @@ namespace newConsolePrinter
 		{
 			*this->value = value;
 
-			if (handler)
-				handler(this);
+			if (onValueChange)
+				onValueChange(this);
 		}
 
 		bool getValue()
@@ -245,9 +243,9 @@ namespace newConsolePrinter
 			return *this->value;
 		}
 
-		void setEventHandler(std::function<void(BoolElement*)> function)
+		void setOnValueChange(std::function<void(BoolElement*)> function)
 		{
-			this->handler = function;
+			this->onValueChange = function;
 		}
 		void setOnAction(std::function<void(BoolElement*)> function)
 		{
@@ -270,7 +268,7 @@ namespace newConsolePrinter
 		int max = INT_MAX;
 
 		//Event Handling
-		std::function<void(IntElement*)> handler;
+		std::function<void(IntElement*)> onValueChange;
 
 		std::function<void(IntElement*)> onAction;
 
@@ -306,8 +304,8 @@ namespace newConsolePrinter
 		{
 			*this->value = value;
 
-			if (handler)
-				handler(this);
+			if (onValueChange)
+				onValueChange(this);
 		}
 
 		int getValue()
@@ -315,9 +313,9 @@ namespace newConsolePrinter
 			return *this->value;
 		}
 
-		void setEventHandler(std::function<void(IntElement*)> function)
+		void setOnValueChange(std::function<void(IntElement*)> function)
 		{
-			this->handler = function;
+			this->onValueChange = function;
 		}
 		void setOnAction(std::function<void(IntElement*)> function)
 		{
@@ -420,6 +418,7 @@ namespace newConsolePrinter
 		std::function<void(ComboElement*)> onAction;
 
 	public:
+		//Todo: also support for string arrays (or even dynamic list?)
 		ComboElement(string name, int *value, char **items, int max, Element *previous) : Element(previous)
 		{
 			this->name = name;
@@ -580,10 +579,14 @@ namespace newConsolePrinter
 		SelectElement *next;
 		SelectElement *previous;
 
-		bool isActiveElement;
+		bool isSelected = false;
+
+		bool wasActiveElement = false;
+
+		bool isActiveElement = false;
 
 	public:
-		SelectElement(string name, Element *previous, SelectElement *prevSelectElement)
+		SelectElement(string name, SelectElement *prevSelectElement, Element *previous)
 			: Element(previous)
 		{
 			this->name = name;
@@ -601,19 +604,20 @@ namespace newConsolePrinter
 
 	protected:
 		// Print function
-		void print(bool isSelected)
-		{
-			
-
-			cout << "  "  << "               \n";
-		}
+		void print(ConsolePrinter *printer, bool isSelected);
 		//Returns true if the value has changed since the last draw
 		bool hasChanged(bool isSelected)
 		{
+			if (this->isSelected != isSelected)
+				return true;
+
+			if (this->isActiveElement != this->wasActiveElement)
+				return true;
+
 			return false;
 		}
 		//
-		void changeValue(Action action)
+		void changeValue(ConsolePrinter* printer, Action action)
 		{
 			if (action == Enter)
 			{
@@ -630,12 +634,22 @@ namespace newConsolePrinter
 				this->isActiveElement = true;
 			}
 		}
+
+	public:
+		int getSelectionIndex()
+		{
+			int i = 0;
+			for (SelectElement *e = this; e; e = e->next)
+			{
+				if (e->isActiveElement)
+					return i;
+
+				i++;
+			}
+			return -1;
+		}
 	};
 
-
-	//typedef void(*voidFunction)();
-
-	class ConsolePrinter;
 
 	class CallbackFunction
 	{
@@ -730,6 +744,8 @@ namespace newConsolePrinter
 
 	class ConsolePage
 	{
+		friend ConsolePrinter;
+
 		//Pointer to our printer
 		ConsolePrinter* printer = NULL;
 		//Pointer to the parent page
@@ -756,9 +772,9 @@ namespace newConsolePrinter
 			elementList.clear();
 		}
 
-		//
+		//Prints the whole page
 		void printAll();
-		//
+		//Prints every element that changed
 		void printChangedElements();
 
 		//Selects the first element on the page
@@ -786,6 +802,7 @@ namespace newConsolePrinter
 			}
 		}
 
+		//
 		void up()
 		{
 			if (!currentElement)
@@ -794,6 +811,7 @@ namespace newConsolePrinter
 			if (currentElement->hasPrev())
 				currentElement = currentElement->getPrev();
 		}
+		//
 		void down()
 		{
 			if (!currentElement)
@@ -803,6 +821,7 @@ namespace newConsolePrinter
 				currentElement = currentElement->getNext();
 		}
 
+		//
 		void changeValue(Action action)
 		{
 			if (!currentElement)
@@ -863,6 +882,40 @@ namespace newConsolePrinter
 			return newElement;
 		}
 
+		ComboElement* Combo(string name, int* value, char** items, int max)
+		{
+			ComboElement *newElement = new ComboElement(name, value, items, max, lastInteractiveElement);
+
+			elementList.push_back(newElement);
+
+			lastInteractiveElement = elementList.back();
+
+			return newElement;
+		}
+
+		SelectElement* Selection(vector<string> names)
+		{
+			if (names.empty())
+				return NULL;
+
+			SelectElement *out = NULL;
+
+			SelectElement *cur = NULL;
+			for (string name : names)
+			{
+				cur = new SelectElement(name, cur, lastInteractiveElement);
+
+				elementList.push_back(cur);
+
+				lastInteractiveElement = elementList.back();
+
+				if (!out)
+					out = cur;
+			}
+
+			return out;
+		}
+
 		TextElement* Text(string name, bool centralize = false)
 		{
 			TextElement *newElement = new TextElement(name, centralize);
@@ -876,19 +929,8 @@ namespace newConsolePrinter
 		{
 			elementList.push_back(new TextElement("", false));
 		}
-		//Add std::string support
-		ComboElement* Combo(string name, int* value, char** items, int max)
-		{
-			ComboElement *newElement = new ComboElement(name, value, items, max, lastInteractiveElement);
-
-			elementList.push_back(newElement);
-
-			lastInteractiveElement = elementList.back();
-
-			return newElement;
-		}
-
-		LogElement* LogElem(string name, size_t size)
+		
+		LogElement* LogElem(size_t size)
 		{
 			LogElement* newLog = new LogElement(NULL);
 
@@ -943,7 +985,7 @@ namespace newConsolePrinter
 					e->name.append(string(maxWidth - e->name.length(), ' '));
 			}
 		}
-
+	protected:
 		void load(bool resetSelction = true)
 		{
 			//Go to first control element if possible
@@ -998,6 +1040,8 @@ namespace newConsolePrinter
 		//Window height
 		float fHeight;
 
+		bool endThread = false;
+
 		ConsolePrinter(int width, int height, Hotkeys newKeys = Hotkeys())
 		{
 			//Try to get console window handle if one exists
@@ -1017,8 +1061,11 @@ namespace newConsolePrinter
 
 			//border y = 30 x = 18
 
-			this->iWidth = width;
+			this->iWidth  = width;
 			this->iHeight = height;
+
+			//Font default width  = 8   border = 26
+			//Font default height = 16  border = 30
 
 			this->fWidth  = (width + 1) * 8 + 26;
 			this->fHeight = height * 16 + 30;
@@ -1035,12 +1082,12 @@ namespace newConsolePrinter
 		}
 		~ConsolePrinter()
 		{
-			if (curThread.joinable())
-				curThread.join();
+			//End thread if possible
+			exit();
 
-			for (ConsolePage *e : pageList)
+			for (ConsolePage *p : pageList)
 			{
-				delete e;
+				delete p;
 			}
 			pageList.clear();
 		}
@@ -1143,7 +1190,7 @@ namespace newConsolePrinter
 		void printChanhgedElements()
 		{
 			if (currentPage)
-			currentPage->printChangedElements();
+				currentPage->printChangedElements();
 			/*for (Element *e : elementList)
 			{
 				if (e->hasChanged(currentElement == e))
@@ -1179,7 +1226,7 @@ namespace newConsolePrinter
 
 			//Check if window is the foreground window
 			if (GetForegroundWindow() != consoleHwnd)
-			{
+			{ //Todo: Figure out os independet way
 				return;
 			}
 
@@ -1232,11 +1279,14 @@ namespace newConsolePrinter
 			return value;
 		}
 
+		//Only returns when the exit key is pressed or the exit function is called
 		void run()
 		{
+			endThread = false;
+
 			currentPage->load();
 
-			while (!checkHotkey(key.exitApp))
+			while (!checkHotkey(key.exitApp) && !endThread)
 			{
 				if (navInputIntervall.check(settings.navInputDelay))
 					navigation();
@@ -1246,10 +1296,12 @@ namespace newConsolePrinter
 
 				executeRegisteredFunctions();
 
-				Sleep(1);
+				//Sleep(1);
+				std::this_thread::sleep_for(std::chrono::milliseconds(1));
 			}
 		}
 
+		//Creates an thread which calls run and then returns
 		thread *start()
 		{
 			curThread = thread(&ConsolePrinter::run, this);
@@ -1257,10 +1309,14 @@ namespace newConsolePrinter
 			return &curThread;
 		}
 
-		/*void registerFunction(CallbackFunction cb)
+		//Ends the Gui thread
+		void exit()
 		{
-			callbackFunctions.push_back(cb);
-		}*/
+			endThread = true;
+			//Only works when started with start
+			if (curThread.joinable())
+				curThread.join();
+		}
 
 		void registerFunction(std::function<void(ConsolePrinter*)> func, int millis = 0)
 		{
@@ -1272,6 +1328,7 @@ namespace newConsolePrinter
 			callbackFunctions.push_back(CallbackFunction(func, millis));
 		}
 
+		//Delete all callback functions
 		void clearRegisteredFunctions()
 		{
 			callbackFunctions.clear();
@@ -1286,8 +1343,7 @@ namespace newConsolePrinter
 			}
 		}
 
-
-
+		//Loads an page and shows it
 		void loadPage(ConsolePage* page)
 		{
 			//Clears the console
@@ -1300,6 +1356,8 @@ namespace newConsolePrinter
 
 			currentPage = page;
 		}
+
+		//Returns to the current parent page if possible
 		void backPage()
 		{
 			//Check if we have an parent page
@@ -1308,7 +1366,7 @@ namespace newConsolePrinter
 				//Clears the console
 				clearConsole();
 
-
+				//Load parent page but dont reset cursor
 				currentPage->getParentPage()->load(false);
 				//Set page to current
 				ConsolePage* parentPage = currentPage->getParentPage();
