@@ -16,20 +16,30 @@
 
 /*
 Todo:
--multiple page support                         //Somewhat done but nothing here to actually switch it
+-multiple page support                         //Done
 -color support
 -page inside element support (enter key and back key required) //Done
 -event handling on elements                    //Done
 -register funtions on console thread           //Done
 -return pointer when elements are created      //Done
 -log multi line element                        //Done but maybe refactor a bit
--multi line select element
+-multi line select element                     //Somewhat done
 */
 
 namespace newConsolePrinter
 {
 	using namespace std;
 
+	template<typename ... Args>
+	std::string string_format(const std::string& format, Args ... args)
+	{
+		int size_s = std::snprintf(nullptr, 0, format.c_str(), args ...) + 1; // Extra space for '\0'
+		if (size_s <= 0) { throw std::runtime_error("Error during formatting."); }
+		size_t size = static_cast<size_t>(size_s);
+		auto buf = std::make_unique<char[]>(size);
+		std::snprintf(buf.get(), size, format.c_str(), args ...);
+		return std::string(buf.get(), buf.get() + size - 1); // We don't want the '\0' inside
+	}
 
 	//[ButtonElement]
 
@@ -80,31 +90,30 @@ namespace newConsolePrinter
 		this->oldValue = *value;
 
 
+		string curLine = stateArrow(isSelected) + name;
 		
+		//curLine.resize()
+		
+		curLine += string_format(" = % 2i", *value);
 
-		char *formatedChars = new char[printer->iWidth - 1];
+		curLine.resize(printer->iWidth - 1, ' ');
 
-		std::memset(formatedChars, ' ', printer->iWidth - 1);
-
-		/*for (int i = 0; i < printer->iWidth - 1; i++)
-		{
-			formatedChars[i] = ' ';
-		}*/
-
-		sprintf_s(formatedChars, printer->iWidth - 1, "%s%s = % 2i  ", stateArrow(isSelected), name.c_str(), *value);
-
-		cout << formatedChars << "\n";
-
-		delete formatedChars;
+		cout << curLine << "\n";
 	}
 
 	void IntElement::changeValue(ConsolePrinter*printer, Action action)
 	{
 		switch (action)
 		{
-		case Increase: setValue(*value + printer->modifier(iStep)); return;
-		case Decrease: setValue(*value - printer->modifier(iStep)); return;
-		case Enter: if (onAction) onAction(this);
+		case Increase: 
+			if (*value + printer->modifier(iStep) <= max)
+				setValue(*value + printer->modifier(iStep)); return;
+		case Decrease: 
+			if (*value - printer->modifier(iStep) >= min)
+				setValue(*value - printer->modifier(iStep)); return;
+		case Enter: 
+			if (onAction) 
+				onAction(this);
 		}
 	}
 
@@ -116,22 +125,35 @@ namespace newConsolePrinter
 
 		this->oldValue = *value;
 
-		
 
-		char *formatedChars = new char[printer->iWidth - 1];
+		string curLine = stateArrow(isSelected) + name;
 
-		std::memset(formatedChars, ' ', printer->iWidth - 1);
+		//curLine.resize()
 
-		/*for (int i = 0; i < printer->iWidth - 1; i++)
+		curLine += string_format(" = % 3.2f", *value);
+
+		curLine.resize(printer->iWidth - 1, ' ');
+
+		cout << curLine << "\n";		
+	}
+
+	void FloatElement::changeValue(ConsolePrinter*printer, Action action)
+	{
+		switch (action)
 		{
-			formatedChars[i] = ' ';
-		}*/
+		case Increase: 
+			if (*value + printer->modifier(fStep) <= max)
+				setValue(*value + fStep); break;
+		case Decrease: 
+			if (*value - printer->modifier(fStep) >= min)
+				setValue(*value - fStep); break;
+		case Enter: 
+			if (onAction)
+				onAction(this);
+		}
 
-		sprintf_s(formatedChars, printer->iWidth - 1,"%s%s = % 3.2f", stateArrow(isSelected), name.c_str(), *value);
-
-		cout << formatedChars << "\n";
-
-		delete formatedChars;
+		if (abs(*value) < 0.0001)
+			*value = 0;
 	}
 
 	//[ComboElement]
@@ -144,19 +166,27 @@ namespace newConsolePrinter
 
 
 
-		char *formatedChars = new char[printer->iWidth - 1];
+		string curLine = stateArrow(isSelected) + name;
+
+		//curLine.resize()
+
+		curLine += string_format(" = %s", items[*value]);
+
+		curLine.resize(printer->iWidth - 1, ' ');
+
+		cout << curLine << "\n";
+
+
+
+		/*char *formatedChars = new char[printer->iWidth - 1];
 
 		std::memset(formatedChars, ' ', printer->iWidth - 1);
-		/*for (int i = 0; i < printer->iWidth - 1; i++)
-		{
-			formatedChars[i] = ' ';
-		}*/
 
 		sprintf_s(formatedChars, printer->iWidth - 1, "%s%s = %s", stateArrow(isSelected), name.c_str(), items[*value]);
 
 		cout << formatedChars << "\n";
 		//cout << stateArrow(isSelected) << name << " = " << items[*value] << "               \n";
-		delete formatedChars;
+		delete formatedChars;*/
 	}
 
 	//[Text]
@@ -191,21 +221,23 @@ namespace newConsolePrinter
 
 		curLine.append("\n");
 
+		printer->setConsoleColor((CColor)color, BLACK);
+
 		cout << curLine;
+
+		printer->setConsoleColor(white, BLACK);
 	}
 
 	//[LogElement]
 
 	void LogElement::print(ConsolePrinter* printer, bool isSelected)
 	{
-		hasChangedb = false;
+		this->oldLog = curLog;
+
 
 		string curLine = stateArrow(false) + curLog;
 
-		/*while (curLine.length() < printer->iWidth - 1)
-			curLine.append(" ");*/
-
-		curLine.resize(printer->iWidth - 1);
+		curLine.resize(printer->iWidth - 1, ' ');
 
 		curLine.append("\n");
 
@@ -222,7 +254,7 @@ namespace newConsolePrinter
 
 		string curLine = stateArrow(isSelected) + name + (isActiveElement ? "   [X]" : "      ");
 		
-		curLine.resize(printer->iWidth - 1);
+		curLine.resize(printer->iWidth - 1, ' ');
 
 		curLine.append("\n");
 
@@ -283,16 +315,6 @@ namespace newConsolePrinter
 		}
 	}
 
-	template<typename ... Args>
-	std::string string_format(const std::string& format, Args ... args)
-	{
-		int size_s = std::snprintf(nullptr, 0, format.c_str(), args ...) + 1; // Extra space for '\0'
-		if (size_s <= 0) { throw std::runtime_error("Error during formatting."); }
-		size_t size = static_cast<size_t>(size_s);
-		auto buf = std::make_unique<char[]>(size);
-		std::snprintf(buf.get(), size, format.c_str(), args ...);
-		return std::string(buf.get(), buf.get() + size - 1); // We don't want the '\0' inside
-	}
 }
 
 //Key code values seems to differ on different operating systems
@@ -303,6 +325,19 @@ enum KeyMap
 
 //We also probably need an enum for colors since these values will likely differ too
 
+
+
+/* Old format method
+		char *formatedChars = new char[printer->iWidth - 1];
+
+		std::memset(formatedChars, ' ', printer->iWidth - 1);
+
+		sprintf_s(formatedChars, printer->iWidth - 1,"%s%s = % 3.2f", stateArrow(isSelected), name.c_str(), *value);
+
+		cout << formatedChars << "\n";
+
+		delete formatedChars;
+*/
 
 
 //Old version super professional commented out

@@ -162,7 +162,7 @@ int main()
 
 	defaultPage->EmptyLine();
 
-	defaultPage->Text("Some Text");
+	defaultPage->Text("Some Text", false, red);
 
 	defaultPage->Combo("Combo", &index, (char**)chars, 3);
 
@@ -242,9 +242,6 @@ int main()
 	SetConsoleScreenBufferSize(hConsole, { 100, 100 });
 
 	SetConsoleWindowInfo(hConsole, true, &Rect);
-
-
-
 #endif
 }
 

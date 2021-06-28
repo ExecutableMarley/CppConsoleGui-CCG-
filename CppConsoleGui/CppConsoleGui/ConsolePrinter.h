@@ -274,7 +274,8 @@ namespace newConsolePrinter
 
 	public:
 		//Constructor
-		IntElement(string name, int *value, int iStep, Element* previous) : Element(previous)
+		IntElement(string name, int *value, int iStep,int min, int max, Element* previous)
+			: Element(previous)
 		{
 			this->name = name;
 
@@ -282,7 +283,11 @@ namespace newConsolePrinter
 
 			this->iStep = iStep;
 
-			oldValue = *value;
+			this->min = min;
+
+			this->max = max;
+
+			this->oldValue = *value;
 		}
 
 	protected:
@@ -333,6 +338,9 @@ namespace newConsolePrinter
 
 		bool isSelected = false;
 
+		float min;
+		float max;
+
 		//Event Handling
 		std::function<void(FloatElement*)> onValueChange;
 
@@ -340,13 +348,18 @@ namespace newConsolePrinter
 
 	public:
 		//Constructor
-		FloatElement(string name, float *value, float fStep, Element* previous) : Element(previous)
+		FloatElement(string name, float *value, float fStep, float min, float max, Element* previous)
+			: Element(previous)
 		{
 			this->name = name;
 
 			this->value = value;
 
 			this->fStep = fStep;
+
+			this->min = min;
+
+			this->max = max;
 
 			this->oldValue = oldValue;
 		}
@@ -363,18 +376,7 @@ namespace newConsolePrinter
 			return oldValue != *value;
 		}
 		//
-		void changeValue(ConsolePrinter*printer, Action action)
-		{
-			switch (action)
-			{
-			case Increase: setValue(*value + fStep); break;
-			case Decrease: setValue(*value - fStep); break;
-			case Enter: if (onAction) onAction(this);
-			}
-
-			if (abs(*value) < 0.0001)
-				*value = 0;
-		}
+		void changeValue(ConsolePrinter*printer, Action action);
 
 	public:
 		void setValue(float value)
@@ -488,11 +490,13 @@ namespace newConsolePrinter
 
 	public:
 		//Constructor
-		TextElement(string name, bool centralize) : Element(NULL)
+		TextElement(string name, bool centralize = false, int color = 0) : Element(NULL)
 		{
 			this->name = name;
 
 			this->centralize = centralize;
+
+			this->color = color;
 		}
 
 	protected:
@@ -518,7 +522,7 @@ namespace newConsolePrinter
 	{
 		string curLog;
 
-		bool hasChangedb = false;
+		string oldLog;
 
 		LogElement *nextLogElem = NULL;
 
@@ -535,7 +539,10 @@ namespace newConsolePrinter
 		//Returns true if the value has changed since the last draw
 		bool hasChanged(bool isSelected)
 		{
-			return hasChangedb;
+			if (curLog != oldLog)
+				return true;
+
+			return false;
 		}
 		//
 		void changeValue(ConsolePrinter*printer, Action action)
@@ -556,8 +563,6 @@ namespace newConsolePrinter
 
 			if (nextLogElem)
 				nextLogElem->clearLogs();
-
-			hasChangedb = true;
 		}
 		//Add a log, pushes other logs down
 		void addLog(string newLog)
@@ -568,8 +573,6 @@ namespace newConsolePrinter
 			}
 
 			curLog = newLog;
-
-			hasChangedb = true;
 		}
 	};
 
@@ -830,11 +833,13 @@ namespace newConsolePrinter
 			currentElement->changeValue(printer,action);
 		}
 
+	protected:
 		void setParentPage(ConsolePage* last)
 		{
 			this->lastPage = last;
 		}
 
+	public:
 		ConsolePage* getParentPage()
 		{
 			return lastPage;
@@ -860,9 +865,9 @@ namespace newConsolePrinter
 			return newElement;
 		}
 
-		IntElement* Int(string name, int *value, int steps = 1)
+		IntElement* Int(string name, int *value, int steps = 1, int min = INT_MIN, int max = INT_MAX)
 		{
-			IntElement *newElement = new IntElement(name, value, steps, lastInteractiveElement);
+			IntElement *newElement = new IntElement(name, value, steps, min, max, lastInteractiveElement);
 
 			elementList.push_back(newElement);
 
@@ -871,9 +876,9 @@ namespace newConsolePrinter
 			return newElement;
 		}
 
-		FloatElement* Float(string name, float* value, float steps = 1)
+		FloatElement* Float(string name, float* value, float steps = 1, float min = FLT_MIN, float max = FLT_MAX)
 		{
-			FloatElement *newElement = new FloatElement(name, value, steps, lastInteractiveElement);
+			FloatElement *newElement = new FloatElement(name, value, steps, min, max, lastInteractiveElement);
 
 			elementList.push_back(newElement);
 
@@ -916,9 +921,9 @@ namespace newConsolePrinter
 			return out;
 		}
 
-		TextElement* Text(string name, bool centralize = false)
+		TextElement* Text(string name, bool centralize = false, int color = white)
 		{
-			TextElement *newElement = new TextElement(name, centralize);
+			TextElement *newElement = new TextElement(name, centralize, color);
 
 			elementList.push_back(newElement);
 
@@ -1078,6 +1083,8 @@ namespace newConsolePrinter
 
 			setCursorVisibility(false);
 
+			setConsoleColor(white, BLACK);
+
 			clearConsole();
 		}
 		~ConsolePrinter()
@@ -1191,15 +1198,6 @@ namespace newConsolePrinter
 		{
 			if (currentPage)
 				currentPage->printChangedElements();
-			/*for (Element *e : elementList)
-			{
-				if (e->hasChanged(currentElement == e))
-				{
-					setCursorPosition(0, line);
-					e->print(currentElement == e);
-				}
-				line++;
-			}*/
 		}
 
 		bool checkHotkey(int hotkey)
@@ -1226,44 +1224,33 @@ namespace newConsolePrinter
 
 			//Check if window is the foreground window
 			if (GetForegroundWindow() != consoleHwnd)
-			{ //Todo: Figure out os independet way
+			{ 
+				//Todo: Figure out os independet way
 				return;
 			}
 
 			if (checkHotkey(key.up))
 			{
-				/*if (currentElement->hasPrev())
-				{
-					currentElement = currentElement->getPrev();
-				}*/
 				currentPage->up();
 			}
 			if (checkHotkey(key.down))
 			{
-				/*if (currentElement->hasNext())
-				{
-					currentElement = currentElement->getNext();
-				}*/
 				currentPage->down();
 			}
 
 			if (checkHotkey(key.left))
 			{
 				currentPage->changeValue(Decrease);
-				//currentElement->changeValue(false);
 			}
 			if (checkHotkey(key.right))
 			{
 				currentPage->changeValue(Increase);
-				//currentElement->changeValue(true);
 			}
 			if (checkHotkey(key.enter))
 			{
 				currentPage->changeValue(Enter);
 			}
 			
-			//left, right, enter, modifier 1, modifier 2
-
 			if (checkHotkey(key.lastPage))
 			{
 				backPage();
