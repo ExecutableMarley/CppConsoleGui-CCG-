@@ -29,16 +29,16 @@ namespace newConsolePrinter
 		DARK_CYAN = 3,
 		DARK_RED = 4,
 		DARK_PURPLE = 5, dark_pink = 5, dark_magenta = 5,
-		dark_yellow = 6,
-		dark_white = 7,
-		gray = 8,
-		blue = 9,
-		green = 10,
-		aqua = 11, cyan = 11,
-		red = 12,
-		purple = 13, pink = 13, magenta = 13,
-		yellow = 14,
-		white = 15
+		DARK_YELLOW = 6,
+		DARK_WHITE = 7,
+		GRAY = 8,
+		BLUE = 9,
+		GREEN = 10,
+		AQUA = 11, cyan = 11,
+		RED = 12,
+		PURPLE = 13, pink = 13, magenta = 13,
+		YELLOW = 14,
+		WHITE = 15
 	};
 
 	struct Settings
@@ -651,6 +651,16 @@ namespace newConsolePrinter
 			}
 			return -1;
 		}
+
+		std::string getSelectionName()
+		{
+			for (SelectElement *e = this; e; e = e->next)
+			{
+				if (e->isActiveElement)
+					return e->name;
+			}
+			return "-1";
+		}
 	};
 
 
@@ -921,7 +931,7 @@ namespace newConsolePrinter
 			return out;
 		}
 
-		TextElement* Text(string name, bool centralize = false, int color = white)
+		TextElement* Text(string name, bool centralize = false, int color = WHITE)
 		{
 			TextElement *newElement = new TextElement(name, centralize, color);
 
@@ -1011,21 +1021,17 @@ namespace newConsolePrinter
 	class ConsolePrinter
 	{
 	public:
-		//std::vector<Element*> elementList;
-		//The current selected element
-		//Element* currentElement;
-		//Last added control element
-		//Element* lastInteractiveElement = NULL;
 
 		HWND consoleHwnd;
 		HANDLE consoleHandle;
 
 		Settings settings;
 
+		Hotkeys key;
+
 		Intervall printIntervall;
 		Intervall navInputIntervall;
 
-		Hotkeys key;
 		//If printer has its own thread
 		thread curThread;
 
@@ -1039,12 +1045,19 @@ namespace newConsolePrinter
 		int iWidth;
 		//Height in characters
 		int iHeight;
+		//Font size
+		int iFontWidth;
+		int iFontHeight;
+		//Border size
+		int borderWidth;
+		int borderHeight;
 
 		//Window width
 		float fWidth;
 		//Window height
 		float fHeight;
 
+		//Used to let the thread exit
 		bool endThread = false;
 
 		ConsolePrinter(int width, int height, Hotkeys newKeys = Hotkeys())
@@ -1064,26 +1077,54 @@ namespace newConsolePrinter
 
 			consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
 
-			//border y = 30 x = 18
+
+
+			CONSOLE_FONT_INFOEX cfi;
+			cfi.cbSize = sizeof(cfi);
+
+			if (GetCurrentConsoleFontEx(consoleHandle, false, &cfi))
+			{
+				this->iFontWidth  = cfi.dwFontSize.X;
+				this->iFontHeight = cfi.dwFontSize.Y;
+			}
+			else
+			{
+				//Default console font size
+				this->iFontWidth  = 8;
+				this->iFontHeight = 16;
+			}
+
+
+			RECT rcClient, rcWind;
+
+			if (GetClientRect(consoleHwnd, &rcClient) &&
+				GetWindowRect(consoleHwnd, &rcWind))
+			{
+				borderWidth = (rcWind.right - rcWind.left) - rcClient.right;
+				borderHeight = (rcWind.bottom - rcWind.top) - rcClient.bottom;
+			}
+			else
+			{
+				//Default border size
+				borderWidth  = 33;
+				borderHeight = 39;
+			}
 
 			this->iWidth  = width;
 			this->iHeight = height;
 
-			//Font default width  = 8   border = 26
-			//Font default height = 16  border = 30
+			//Calculate the needed window size 
+			this->fWidth  = (width) * iFontWidth  + borderWidth;
+			this->fHeight =  height * iFontHeight + borderHeight;
 
-			this->fWidth  = (width + 1) * 8 + 26;
-			this->fHeight = height * 16 + 30;
-
+			//Resize window
 			resizeWindow(fWidth, fHeight);
-
-			//cout << "123456789 123456789 123456789 123456789 123456789 \n";
 
 			key = newKeys;
 
 			setCursorVisibility(false);
 
-			setConsoleColor(white, BLACK);
+			setConsoleColor(WHITE, BLACK);
 
 			clearConsole();
 		}

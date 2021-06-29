@@ -17,7 +17,7 @@
 /*
 Todo:
 -multiple page support                         //Done
--color support
+-color support                                 //Text elem supported
 -page inside element support (enter key and back key required) //Done
 -event handling on elements                    //Done
 -register funtions on console thread           //Done
@@ -225,7 +225,7 @@ namespace newConsolePrinter
 
 		cout << curLine;
 
-		printer->setConsoleColor(white, BLACK);
+		printer->setConsoleColor(WHITE, BLACK);
 	}
 
 	//[LogElement]

@@ -162,7 +162,7 @@ int main()
 
 	defaultPage->EmptyLine();
 
-	defaultPage->Text("Some Text", false, red);
+	defaultPage->Text("Some Text", false, RED);
 
 	defaultPage->Combo("Combo", &index, (char**)chars, 3);
 
