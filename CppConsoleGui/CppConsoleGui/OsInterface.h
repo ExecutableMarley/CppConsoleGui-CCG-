@@ -54,7 +54,7 @@ Everything os dependent inside here
 
 #include <Windows.h>
 
-class ConsoleOsInterface
+class ConsoleOsInterface : public ConsoleOsTemplate
 {
 private:
 	//Handle to console
@@ -81,6 +81,11 @@ public:
 		}
 
 		consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+
+		// Redirect the CRT standard input, output, and error handles to the console
+		/*freopen("CONIN$" , "r", stdin);
+		freopen("CONOUT$", "w", stderr);
+		freopen("CONOUT$", "w", stdout);*/
 	}
 
 	//Resize window to x y
@@ -157,6 +162,43 @@ public:
 	{
 		return IsWindowVisible(consoleHwnd);
 	}
+
+
+	void getFontSize(int &iFontWidth, int &iFontHeight)
+	{
+		CONSOLE_FONT_INFOEX cfi;
+		cfi.cbSize = sizeof(cfi);
+
+		if (GetCurrentConsoleFontEx(consoleHandle, false, &cfi))
+		{
+			iFontWidth = cfi.dwFontSize.X;
+			iFontHeight = cfi.dwFontSize.Y;
+		}
+		else
+		{
+			//Default console font size
+			iFontWidth = 8;
+			iFontHeight = 16;
+		}
+	}
+
+	void getBorderSize(int &borderWidth, int &borderHeight)
+	{
+		RECT rcClient, rcWind;
+
+		if (GetClientRect(consoleHwnd, &rcClient) &&
+			GetWindowRect(consoleHwnd, &rcWind))
+		{
+			borderWidth = (rcWind.right - rcWind.left) - rcClient.right;
+			borderHeight = (rcWind.bottom - rcWind.top) - rcClient.bottom;
+		}
+		else
+		{
+			//Default border size
+			borderWidth = 33;
+			borderHeight = 39;
+		}
+	}
 };
 #endif
 
@@ -168,7 +210,7 @@ public:
 //Linux Implementation
 #if defined (unix) || defined (__unix__) || defined (__unix)
 
-class ConsoleOsInterface
+class ConsoleOsInterface : public ConsoleOsTemplate
 {
 private:
 	//Private Members

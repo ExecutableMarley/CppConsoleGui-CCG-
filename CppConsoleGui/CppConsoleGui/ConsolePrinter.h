@@ -10,6 +10,8 @@
 
 #include "TimeFuncs.h"
 
+#include "OsInterface.h"
+
 namespace newConsolePrinter
 {
 	using namespace std;
@@ -21,6 +23,7 @@ namespace newConsolePrinter
 		Enter,
 	};
 
+	//Platform dependent
 	enum CColor
 	{
 		BLACK = 0,
@@ -886,7 +889,7 @@ namespace newConsolePrinter
 			return newElement;
 		}
 
-		FloatElement* Float(string name, float* value, float steps = 1, float min = FLT_MIN, float max = FLT_MAX)
+		FloatElement* Float(string name, float* value, float steps = 1, float min = -FLT_MAX, float max = FLT_MAX)
 		{
 			FloatElement *newElement = new FloatElement(name, value, steps, min, max, lastInteractiveElement);
 
@@ -953,7 +956,7 @@ namespace newConsolePrinter
 
 			LogElement* temp = newLog;
 
-			for (int i = 0; i < size; i++)
+			for (int i = 0; i < size - 1; i++)
 			{
 				temp = new LogElement(temp);
 
@@ -1025,6 +1028,9 @@ namespace newConsolePrinter
 		HWND consoleHwnd;
 		HANDLE consoleHandle;
 
+
+		ConsoleOsInterface osInterface;
+
 		Settings settings;
 
 		Hotkeys key;
@@ -1062,6 +1068,9 @@ namespace newConsolePrinter
 
 		ConsolePrinter(int width, int height, Hotkeys newKeys = Hotkeys())
 		{
+			//osInterface = ConsoleOsInterface();
+
+
 			//Try to get console window handle if one exists
 			consoleHwnd = GetConsoleWindow();
 

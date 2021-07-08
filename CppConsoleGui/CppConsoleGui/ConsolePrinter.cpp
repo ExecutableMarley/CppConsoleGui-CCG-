@@ -94,7 +94,7 @@ namespace newConsolePrinter
 		
 		//curLine.resize()
 		
-		curLine += string_format(" = % 2i", *value);
+		curLine += string_format(" = % i", *value);
 
 		curLine.resize(printer->iWidth - 1, ' ');
 
@@ -170,7 +170,7 @@ namespace newConsolePrinter
 
 		//curLine.resize()
 
-		curLine += string_format(" = %s", items[*value]);
+		curLine += string_format(" =  %s", items[*value]);
 
 		curLine.resize(printer->iWidth - 1, ' ');
 
