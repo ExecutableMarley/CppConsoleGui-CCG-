@@ -140,8 +140,15 @@ int main()
 	}
 
 #else
+	Hotkeys hotkeys;
 
-	newConsolePrinter::ConsolePrinter con(53, 30);
+	hotkeys.down  = VK_NUMPAD2;
+	hotkeys.up    = VK_NUMPAD8;
+	hotkeys.left  = VK_NUMPAD4;
+	hotkeys.right = VK_NUMPAD6;
+
+
+	newConsolePrinter::ConsolePrinter con(53, 30, hotkeys);
 
 	con.setConsoleTitle("Hello World");
 
@@ -158,7 +165,7 @@ int main()
 	defaultPage->Bool("Bool Thingy 2", &Boolean);
 
 	IntElement *intElement = defaultPage->Int("Int Thingy 3", &Integer, 1);
-	defaultPage->Float("Float Thingy 4", &Float, 0.2f);
+	defaultPage->Float("Float Thingy 4", &Float, 0.2f, -1.f, 2.3);
 
 	defaultPage->EmptyLine();
 

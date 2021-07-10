@@ -862,6 +862,8 @@ namespace newConsolePrinter
 		{
 			ButtonElement* newButton = new ButtonElement(name, lastInteractiveElement);
 
+			elementList.push_back(newButton);
+
 			lastInteractiveElement = elementList.back();
 
 			return newButton;

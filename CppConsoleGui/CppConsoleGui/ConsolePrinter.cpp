@@ -30,15 +30,29 @@ namespace newConsolePrinter
 {
 	using namespace std;
 
+	//Until compiler supports c++20 string format we use this
 	template<typename ... Args>
 	std::string string_format(const std::string& format, Args ... args)
 	{
+		//https://stackoverflow.com/a/26221725
+		//From "iFreilicht" licensed under CC0 1.0
 		int size_s = std::snprintf(nullptr, 0, format.c_str(), args ...) + 1; // Extra space for '\0'
 		if (size_s <= 0) { throw std::runtime_error("Error during formatting."); }
 		size_t size = static_cast<size_t>(size_s);
 		auto buf = std::make_unique<char[]>(size);
 		std::snprintf(buf.get(), size, format.c_str(), args ...);
 		return std::string(buf.get(), buf.get() + size - 1); // We don't want the '\0' inside
+	}
+
+	template<typename val>
+	val clamp(val base, val min, val max)
+	{
+		if (base < min)
+			return min;
+		else if (base > max)
+			return max;
+
+		return base;
 	}
 
 	//[ButtonElement]
@@ -105,12 +119,10 @@ namespace newConsolePrinter
 	{
 		switch (action)
 		{
-		case Increase: 
-			if (*value + printer->modifier(iStep) <= max)
-				setValue(*value + printer->modifier(iStep)); return;
-		case Decrease: 
-			if (*value - printer->modifier(iStep) >= min)
-				setValue(*value - printer->modifier(iStep)); return;
+		case Increase:
+			setValue(clamp(*value + printer->modifier(iStep), min, max)); break;
+		case Decrease:
+			setValue(clamp(*value - printer->modifier(iStep), min, max)); break;
 		case Enter: 
 			if (onAction) 
 				onAction(this);
@@ -142,11 +154,9 @@ namespace newConsolePrinter
 		switch (action)
 		{
 		case Increase: 
-			if (*value + printer->modifier(fStep) <= max)
-				setValue(*value + fStep); break;
+			setValue(clamp(*value + printer->modifier(fStep), min, max)); break;
 		case Decrease: 
-			if (*value - printer->modifier(fStep) >= min)
-				setValue(*value - fStep); break;
+			setValue(clamp(*value - printer->modifier(fStep), min, max)); break;
 		case Enter: 
 			if (onAction)
 				onAction(this);
@@ -313,6 +323,7 @@ namespace newConsolePrinter
 			}
 			line++;
 		}
+		printer->setCursorPosition(0, 0);
 	}
 
 }
