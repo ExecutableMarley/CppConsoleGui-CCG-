@@ -86,6 +86,8 @@ namespace newConsolePrinter
 
 		int color;
 
+		int oldColor;
+
 		const char* stateArrow(bool state)
 		{
 			return state ? "->" : "  ";
@@ -125,6 +127,12 @@ namespace newConsolePrinter
 			return prev;
 		}
 
+		//
+		void setColor(int color)
+		{
+			this->color = color;
+		}
+
 		//Add next pointer
 		void addNext(Element *next)
 		{
@@ -162,6 +170,9 @@ namespace newConsolePrinter
 		bool hasChanged(bool isSelected)
 		{
 			if (this->isSelected != isSelected)
+				return true;
+
+			if (this->oldColor != color)
 				return true;
 
 			return false;
@@ -217,6 +228,9 @@ namespace newConsolePrinter
 		bool hasChanged(bool isSelected)
 		{
 			if (this->isSelected != isSelected)
+				return true;
+
+			if (this->oldColor != color)
 				return true;
 
 			return oldValue != *value;
@@ -302,6 +316,9 @@ namespace newConsolePrinter
 			if (this->isSelected != isSelected)
 				return true;
 
+			if (this->oldColor != color)
+				return true;
+
 			return oldValue != *value;
 		}
 		//
@@ -376,6 +393,9 @@ namespace newConsolePrinter
 			if (this->isSelected != isSelected)
 				return true;
 
+			if (this->oldColor != color)
+				return true;
+
 			return oldValue != *value;
 		}
 		//
@@ -437,6 +457,11 @@ namespace newConsolePrinter
 			this->oldValue = *value;
 		}
 
+		/*ComboElement(string name, int *value, string items[], int max, Element *previous) : Element(previous)
+		{
+
+		}*/
+
 	protected:
 		//Print function
 		void print(ConsolePrinter *printer, bool isSelected);
@@ -444,6 +469,9 @@ namespace newConsolePrinter
 		bool hasChanged(bool isSelected)
 		{
 			if (this->isSelected != isSelected)
+				return true;
+
+			if (oldColor != color)
 				return true;
 
 			return oldValue != *value;
@@ -491,15 +519,21 @@ namespace newConsolePrinter
 	{
 		bool centralize;
 
+		string oldValue;
+
 	public:
 		//Constructor
 		TextElement(string name, bool centralize = false, int color = 0) : Element(NULL)
 		{
 			this->name = name;
 
+			this->oldValue = name;
+
 			this->centralize = centralize;
 
 			this->color = color;
+
+			this->oldColor = color;
 		}
 
 	protected:
@@ -508,7 +542,10 @@ namespace newConsolePrinter
 		//
 		bool hasChanged(bool isSelected)
 		{
-			return false;
+			if (oldColor != color)
+				return true;
+
+			return oldValue != name;
 		}
 		//
 		void changeValue(ConsolePrinter*printer, Action action)
@@ -543,6 +580,9 @@ namespace newConsolePrinter
 		bool hasChanged(bool isSelected)
 		{
 			if (curLog != oldLog)
+				return true;
+
+			if (this->oldColor != color)
 				return true;
 
 			return false;
@@ -615,6 +655,9 @@ namespace newConsolePrinter
 		bool hasChanged(bool isSelected)
 		{
 			if (this->isSelected != isSelected)
+				return true;
+
+			if (this->oldColor != color)
 				return true;
 
 			if (this->isActiveElement != this->wasActiveElement)
@@ -1111,14 +1154,14 @@ namespace newConsolePrinter
 			if (GetClientRect(consoleHwnd, &rcClient) &&
 				GetWindowRect(consoleHwnd, &rcWind))
 			{
-				borderWidth = (rcWind.right - rcWind.left) - rcClient.right;
-				borderHeight = (rcWind.bottom - rcWind.top) - rcClient.bottom;
+				this->borderWidth = (rcWind.right - rcWind.left) - rcClient.right;
+				this->borderHeight = (rcWind.bottom - rcWind.top) - rcClient.bottom;
 			}
 			else
 			{
 				//Default border size
-				borderWidth  = 33;
-				borderHeight = 39;
+				this->borderWidth  = 33;
+				this->borderHeight = 39;
 			}
 
 			this->iWidth  = width;

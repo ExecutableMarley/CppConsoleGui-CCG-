@@ -152,7 +152,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ConsolePrinter.cpp" />
-    <ClCompile Include="CppConsoleGui.cpp" />
+    <ClCompile Include="Demo.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ConsolePrinter.h" />

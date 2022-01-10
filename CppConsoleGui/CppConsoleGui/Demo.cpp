@@ -71,82 +71,22 @@ void something(Types ... a)
 {
 
 }
-/*
-template<class ... Types>
-string format(const char* _format, Types ... a)
-{
-	char buffer[128];
 
-	sprintf_s(buffer, format, a);
-
-	return buffer;
-}*/
 
 template<class Type>
 void test1(Type t)
 {
 
-}/*
-
-
-template<class ... Types>
-string format(string _format, Types ... a)
-{
-	return format(_format.c_str(), a);
-}*/
+}
 
 int main()
 {
-	//const char *jju = "Hallo %s    [%d]";
-
-	//string abc = format("Hallo %s    [%d]", "Welt", 10);
-	//cout << abc << endl;
-
-
-
-#if 0
-	ConsolePrinter con(450, 500);
-
-	//con.addTextElement("Line 1");
-	//con.EmptyLine();
-	//con.addTextElement("Line 3");
-
-	con.addTextElement("SOME TEXT");
-
-	con.addBoolElement("Bool Thingy 1", &Boolean);
-	con.addBoolElement("Bool Thingy 2", &Boolean);
-
-	con.addTextElement("-------------------------------------------------");
-
-	con.EmptyLine();
-	con.addTextElement("SOME TEXT");
-	con.EmptyLine();
-
-	con.Int("Int Thingy 3", &Integer, 1);
-	con.Float("Float Thingy 4", &Float, 0.2);
-
-	con.Combo("Combo Thingy", &index, (char**)chars, 3);
-
-
-	con.evenStringSize();
-
-	con.print();
-
-	while (!GetAsyncKeyState(VK_END))
-	{
-		con.navigation();
-
-		Sleep(150);
-	}
-
-#else
 	Hotkeys hotkeys;
 
 	hotkeys.down  = VK_NUMPAD2;
 	hotkeys.up    = VK_NUMPAD8;
 	hotkeys.left  = VK_NUMPAD4;
 	hotkeys.right = VK_NUMPAD6;
-
 
 	newConsolePrinter::ConsolePrinter con(53, 30, hotkeys);
 
@@ -249,7 +189,6 @@ int main()
 	SetConsoleScreenBufferSize(hConsole, { 100, 100 });
 
 	SetConsoleWindowInfo(hConsole, true, &Rect);
-#endif
 }
 
 

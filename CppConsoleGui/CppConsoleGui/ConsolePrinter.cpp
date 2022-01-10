@@ -81,6 +81,8 @@ namespace newConsolePrinter
 
 		this->oldValue = *value;
 
+		this->oldColor = color;
+
 		string curLine = stateArrow(isSelected) + name + " = " + stateChar(*value);
 
 		/*while (curLine.length() < printer->iWidth - 1)
@@ -103,6 +105,7 @@ namespace newConsolePrinter
 
 		this->oldValue = *value;
 
+		this->oldColor = color;
 
 		string curLine = stateArrow(isSelected) + name;
 		
@@ -137,6 +140,7 @@ namespace newConsolePrinter
 
 		this->oldValue = *value;
 
+		this->oldColor = color;
 
 		string curLine = stateArrow(isSelected) + name;
 
@@ -146,7 +150,7 @@ namespace newConsolePrinter
 
 		curLine.resize(printer->iWidth - 1, ' ');
 
-		cout << curLine << "\n";		
+		cout << curLine << "\n";
 	}
 
 	void FloatElement::changeValue(ConsolePrinter*printer, Action action)
@@ -172,6 +176,8 @@ namespace newConsolePrinter
 	{
 		this->isSelected = isSelected;
 
+		this->oldColor = this->color;
+
 		this->oldValue = *value;
 
 
@@ -185,24 +191,15 @@ namespace newConsolePrinter
 		curLine.resize(printer->iWidth - 1, ' ');
 
 		cout << curLine << "\n";
-
-
-
-		/*char *formatedChars = new char[printer->iWidth - 1];
-
-		std::memset(formatedChars, ' ', printer->iWidth - 1);
-
-		sprintf_s(formatedChars, printer->iWidth - 1, "%s%s = %s", stateArrow(isSelected), name.c_str(), items[*value]);
-
-		cout << formatedChars << "\n";
-		//cout << stateArrow(isSelected) << name << " = " << items[*value] << "               \n";
-		delete formatedChars;*/
 	}
 
 	//[Text]
 
 	void TextElement::print(ConsolePrinter *printer, bool isSelected)
 	{
+		this->oldValue = name;
+		this->oldColor = color;
+
 		int width = printer->iWidth;
 
 		string curLine = stateArrow(false);
@@ -244,6 +241,7 @@ namespace newConsolePrinter
 	{
 		this->oldLog = curLog;
 
+		this->oldColor = color;
 
 		string curLine = stateArrow(false) + curLog;
 
@@ -259,6 +257,8 @@ namespace newConsolePrinter
 	void SelectElement::print(ConsolePrinter *printer, bool isSelected)
 	{
 		this->isSelected = isSelected;
+
+		this->oldColor = color;
 
 		wasActiveElement = isActiveElement;
 
@@ -278,6 +278,8 @@ namespace newConsolePrinter
 	void PageElement::print(ConsolePrinter *printer, bool isSelected)
 	{
 		this->isSelected = isSelected;
+
+		this->oldColor = color;
 
 		//cout << stateArrow(isSelected) << name << "            \n";
 
@@ -337,427 +339,4 @@ enum KeyMap
 //We also probably need an enum for colors since these values will likely differ too
 
 
-
-/* Old format method
-		char *formatedChars = new char[printer->iWidth - 1];
-
-		std::memset(formatedChars, ' ', printer->iWidth - 1);
-
-		sprintf_s(formatedChars, printer->iWidth - 1,"%s%s = % 3.2f", stateArrow(isSelected), name.c_str(), *value);
-
-		cout << formatedChars << "\n";
-
-		delete formatedChars;
-*/
-
-
-//Old version super professional commented out
-/*
-struct element
-{
-	enum types
-	{
-		BOOL,
-		INT,
-		FLOAT,
-		CHAR,
-		TEXT,
-		EMPTY
-	};
-
-	const char* stateChar(bool state)
-	{
-		return state ? "[ON] " : "[OFF]";
-	}
-
-	const char* stateArrow(bool state)
-	{
-		return state ? "->" : "  ";
-	}
-
-	element(string newName, uintptr_t newPointer, types newType, int newLineIndex)
-	{
-		name = newName;
-		ptr = newPointer;
-		myType = newType;
-		lineIndex = newLineIndex;
-	}
-	element(string newName, types newType, int newLineIndex)
-	{
-		name = newName;
-		//ptr = newPointer;
-		myType = newType;
-		lineIndex = newLineIndex;
-	}
-	element(string newName, bool  *newPointer,int newLineIndex)
-	{
-		name = newName;
-		ptr = (uintptr_t)newPointer;
-		myType = BOOL;
-		lineIndex = newLineIndex;
-	}
-	element(string newName, int   *newPointer,int newLineIndex, int step)
-	{
-		name = newName;
-		ptr = (uintptr_t)newPointer;
-		myType = INT;
-		lineIndex = newLineIndex;
-		iStep = step;
-	}
-	element(string newName, float *newPointer,int newLineIndex, float step)
-	{
-		name = newName;
-		ptr = (uintptr_t)newPointer;
-		myType = FLOAT;
-		lineIndex = newLineIndex;
-		fStep = step;
-	}
-	element(string newName, int   *newPointer,char **items, int newLineIndex, int max)
-	{
-		name = newName;
-		ptr = (uintptr_t)newPointer;
-		this->items = items;
-		myType = CHAR;
-		lineIndex = newLineIndex;
-		iStep = max;
-	}
-
-	void print(int curIndex)
-	{
-		//std::cout << stateArrow(curIndex == index) << name << " = ";
-
-		if (myType == EMPTY)
-		{
-			cout << "\n";
-		}
-		if (myType == TEXT)
-		{
-			cout << stateArrow(false) << name << "\n";
-		}
-		if (myType == INT)
-		{
-			cout << stateArrow(curIndex == lineIndex) << name << " = " << *((int*)ptr) << "             \n";
-		}
-		if (myType == FLOAT)
-		{
-			cout << stateArrow(curIndex == lineIndex) << name << " = " << *((float*)ptr) << "                    \n";
-		}
-		if (myType == BOOL)
-		{
-			cout << stateArrow(curIndex == lineIndex) << name << " = " << stateChar(*((bool*)ptr)) << "               \n";
-		}
-		if (myType == CHAR)
-		{
-			cout << stateArrow(curIndex == lineIndex) << name << " = " << (items)[*(int*)ptr]  << "               \n";
-		}
-	}
-	void changeValue(bool positive)
-	{
-		if (myType == INT)
-		{
-			if (positive && *(int*)ptr < INT_MAX)
-				*(int*)ptr += iStep;
-			else if (!positive && *(int*)ptr > INT_MIN)
-				*(int*)ptr -= iStep;
-		}
-		if (myType == FLOAT)
-		{
-			if (positive && *(float*)ptr < FLT_MAX)
-				*(float*)ptr += fStep;
-			else if (!positive && *(float*)ptr > -1000.f)
-				*(float*)ptr -= fStep;
-
-			if (*(float*)ptr < 0.001 && *(float*)ptr > -0.001)
-			{
-				*(float*)ptr = 0.f;
-			}
-		}
-		if (myType == BOOL)
-		{
-			*(bool*)ptr = !*(bool*)ptr;
-		}
-		if (myType == CHAR)
-		{
-			if (positive && *(int*)ptr < iStep - 1)
-				*(int*)ptr += 1;
-			else if (!positive && *(int*)ptr > 0)
-				*(int*)ptr -= 1;
-		}
-	}
-
-	union
-	{
-		int iStep;
-		float fStep;
-	};
-
-	types myType;
-	string name;
-	int lineIndex; //used to find the y position of the line
-	uintptr_t ptr;
-
-	char **items;
-
-	int color;
-
-	int next = -1;
-	int prev = -1;
-};
-
-
-class ConsolePrinter
-{
-	int bgColor;
-	int textColor;
-
-	int lineMaxIndex = 0;
-	int curLineIndex = 0;
-	int lastLineIndex = 0;
-	int lastElemenIndex = -1;
-
-	//bool isWindowVisible;
-
-	HWND consoleHwnd;
-	HANDLE consoleHandle;
-
-	std::vector<element> elemenList;
-
-	Hotkeys key;
-
-public:
-	ConsolePrinter(int width, int height, Hotkeys newKeys = Hotkeys())
-	{
-		//Try to get console handle if one exists
-		consoleHwnd = GetConsoleWindow();
-
-		//Check if thread has console
-		if (!consoleHwnd)
-		{   //Try to create console
-			if (!AllocConsole())
-			{
-				//Failed to create console
-			}
-			consoleHwnd = GetConsoleWindow();
-		}
-
-		consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
-
-		resizeWindow(width, height);
-
-		key = newKeys;
-	}
-
-	bool resizeWindow(int width, int height)
-	{
-		RECT r;
-		GetWindowRect(consoleHwnd, &r);
-
-		return MoveWindow(consoleHwnd, r.left, r.top, width, height, TRUE);
-	}
-	bool moveWindow(int x, int y)
-	{
-		RECT r;
-		GetWindowRect(consoleHwnd, &r);
-
-		return MoveWindow(consoleHwnd,x, y, r.right - r.left, r.bottom - r.top, TRUE);
-	}
-
-	bool toggleWindow(bool state)
-	{
-		if (state)
-			return ShowWindow(consoleHwnd, SW_SHOW);
-		else
-			return ShowWindow(consoleHwnd, SW_HIDE);
-	}
-
-	void evenStringSize()
-	{
-		int maxSize = 0;
-
-		for (auto i = elemenList.begin(); i != elemenList.end();i++)
-		{
-			if (maxSize < (*i).name.size() && (*i).myType != element::types::TEXT)
-				maxSize = (*i).name.size();
-		}
-
-		for (auto i = elemenList.begin(); i != elemenList.end();i++)
-		{
-			while (maxSize > (*i).name.size())
-				(*i).name.append(" ");
-		}
-	}
-
-	void addTextElement(string name)
-	{
-		element e(name, 0, element::types::TEXT,lineMaxIndex);
-		elemenList.push_back(e);
-
-		lineMaxIndex++;
-	}
-	void EmptyLine()
-	{
-		element e("\n", 0, element::types::EMPTY,lineMaxIndex);
-		elemenList.push_back(e);
-
-		lineMaxIndex++;
-	}
-	void addBoolElement(string name, bool *newBool)
-	{
-		element e(name, (uintptr_t)newBool, element::types::BOOL,lineMaxIndex);
-
-		//set the next of the previous to current
-		if (lastElemenIndex > -1) //But only if its not the first element
-		elemenList[lastElemenIndex].next = lineMaxIndex;
-		//set the pre of the current
-		e.prev = lastElemenIndex;
-		//update index
-		lastElemenIndex = lineMaxIndex;
-
-		elemenList.push_back(e);
-
-		if (curLineIndex == 0)
-			curLineIndex = lineMaxIndex;
-
-		//lasAddedIndex++;
-		lineMaxIndex++;
-	}
-	void Int(string name, int *newInt, int step)
-	{
-		element e(name, newInt, lineMaxIndex, step);
-
-		//set the next of the previous to current
-		if (lastElemenIndex > -1) //But only if its not the first element
-		elemenList[lastElemenIndex].next = lineMaxIndex;
-		//set the pre of the current
-		e.prev = lastElemenIndex;
-		//update index
-		lastElemenIndex = lineMaxIndex;
-
-		elemenList.push_back(e);
-
-		if (curLineIndex == 0)
-			curLineIndex = lineMaxIndex;
-
-		//lasAddedIndex++;
-		lineMaxIndex++;
-	}
-	void Float(string name, float *newFloat, float step)
-	{
-		element e(name, newFloat, lineMaxIndex, step);
-
-		//set the next of the previous to current
-		if (lastElemenIndex > -1) //But only if its not the first element
-		elemenList[lastElemenIndex].next = lineMaxIndex;
-		//set the pre of the current
-		e.prev = lastElemenIndex;
-		//update index
-		lastElemenIndex = lineMaxIndex;
-
-		elemenList.push_back(e);
-
-		if (curLineIndex == 0)
-			curLineIndex = lineMaxIndex;
-
-		//lasAddedIndex++;
-		lineMaxIndex++;
-	}
-	void Combo(string name, int *newInt, char** items, int step)
-	{
-		element e(name, newInt,items, lineMaxIndex, step);
-
-		//set the next of the previous to current
-		if (lastElemenIndex > -1) //But only if its not the first element
-			elemenList[lastElemenIndex].next = lineMaxIndex;
-		//set the pre of the current
-		e.prev = lastElemenIndex;
-		//update index
-		lastElemenIndex = lineMaxIndex;
-
-		elemenList.push_back(e);
-
-		if (curLineIndex == 0)
-			curLineIndex = lineMaxIndex;
-
-		//lasAddedIndex++;
-		lineMaxIndex++;
-	}
-
-	void setCursorPosition(int x, int y)
-	{
-		COORD pos = { x, y };
-		SetConsoleCursorPosition(consoleHandle, pos);
-	}
-
-	void print()
-	{
-		setCursorPosition(0, 0);
-
-		for (auto i = elemenList.begin(); i != elemenList.end();i++)
-		{
-			(*i).print(curLineIndex);
-		}
-	}
-	bool checkHotkey(int hotkey)
-	{
-		if (hotkey)
-			return GetAsyncKeyState(hotkey);
-		return false;
-	}
-
-	void navigation()
-	{
-
-		if (checkHotkey(key.toggleVisible))
-		{
-			WINDOWPLACEMENT wnd;
-
-			GetWindowPlacement(consoleHwnd, &wnd);
-
-			if (IsWindowVisible(consoleHwnd))
-				toggleWindow(false);
-			else
-				toggleWindow(true);
-		}
-
-
-		if (GetForegroundWindow() != consoleHwnd)
-		{
-			return;
-		}
-
-		if (GetAsyncKeyState(key.up))
-		{
-			if (elemenList[curLineIndex].prev != -1)
-			{
-				curLineIndex = elemenList[curLineIndex].prev;
-			}
-
-		}
-		if (GetAsyncKeyState(key.down))
-		{
-			if (elemenList[curLineIndex].next != -1)
-			{
-				curLineIndex = elemenList[curLineIndex].next;
-			}
-
-		}
-		if (GetAsyncKeyState(key.left))
-		{
-			elemenList[curLineIndex].changeValue(false);
-			print();
-		}
-		if (GetAsyncKeyState(key.right))
-		{
-			elemenList[curLineIndex].changeValue(true);
-			print();
-		}
-
-		if (curLineIndex != lastLineIndex)
-		{
-			print();
-
-			lastLineIndex = curLineIndex;
-		}
-	}
-};*/
 

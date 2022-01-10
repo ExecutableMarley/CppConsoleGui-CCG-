@@ -15,10 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CppConsoleGui.cpp">
+    <ClCompile Include="ConsolePrinter.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
-    <ClCompile Include="ConsolePrinter.cpp">
+    <ClCompile Include="Demo.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
   </ItemGroup>
