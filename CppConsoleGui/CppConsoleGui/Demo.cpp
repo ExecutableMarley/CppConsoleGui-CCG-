@@ -1,83 +1,19 @@
-// CppConsoleGui.cpp : Diese Datei enthält die Funktion "main". Hier beginnt und endet die Ausführung des Programms.
-//
-
 #include <iostream>
 #include <string>
 #include <vector>    
-#include <Windows.h>
-//#include <stdlib.h> 
-#include <thread>
 
 #include "TimeFuncs.h"
-
 #include "ConsolePrinter.h"
 
-
-
-
 using namespace std;
-
-using namespace newConsolePrinter;
-
-
-
-
-
-
-
+using namespace CCG;
 
 bool Boolean = true;
 int Integer = 1;
 float Float = 1;
 
-const char *chars[] = { "Item 1", "Item 2", "Item 3" };
-int index = 0;
-
-void ptrTest(newConsolePrinter::ConsolePrinter* ptr)
-{
-
-}
-
-void lamTest(std::function<int(int)> lambda)
-{
-	cout << lambda(1) << endl;
-}
-
-int test(int t)
-{
-	return 1;
-}
-
-void foo()
-{
-	std::function<int(int)> abc = test;
-
-	lamTest(abc);
-
-	std::function<int(int)> cbc = [](int p) { return 12; };
-
-	lamTest(cbc);
-
-
-	auto dbc = [](int p) { return 12; };
-
-
-
-	lamTest([](int p) -> int { return 12; });
-}
-
-template<class ... Types>
-void something(Types ... a)
-{
-
-}
-
-
-template<class Type>
-void test1(Type t)
-{
-
-}
+const char *comboElements[] = { "Item 1", "Item 2", "Item 3" };
+int comboIndex = 0;
 
 int main()
 {
@@ -88,30 +24,39 @@ int main()
 	hotkeys.left  = VK_NUMPAD4;
 	hotkeys.right = VK_NUMPAD6;
 
-	newConsolePrinter::ConsolePrinter con(53, 30, hotkeys);
+	//width, height, optional custom hotkeys
+	CCG::ConsolePrinter con(53, 30, hotkeys);
 
 	con.setConsoleTitle("Hello World");
 
-	//Registering functions that will be executed in the con thread
-	//con.registerFunction([](void) -> void { Beep(1000, 200); });
+	//Register an function to add an text rotation effect to the console title
+	con.registerFunction([](CCG::ConsolePrinter* ptr) -> void 
+	{
+		string str = "Hello World";
+		static int i = 0;
 
-	//con.registerFunction([](newConsolePrinter::ConsolePrinter* ptr) -> void { Beep(1000, 200); });
+		std::rotate(str.begin(), str.begin() + (++i % str.size()), str.end());
+		ptr->setConsoleTitle(str);
+	
+	}, 1000);
 
-	//con.registerFunction(foo);
 	//Creates an page and auto sets it to the default page
 	ConsolePage* defaultPage = con.createDefaultPage();
 
-	defaultPage->Bool("Bool Thingy 1", &Boolean);
-	defaultPage->Bool("Bool Thingy 2", &Boolean);
+	
+	defaultPage->Bool("Bool Thing 1", &Boolean);
+	defaultPage->Bool("Bool Thing 2", &Boolean);
 
+	
 	IntElement *intElement = defaultPage->Int("Int Thingy 3", &Integer, 1);
+	
 	defaultPage->Float("Float Thingy 4", &Float, 0.2f, -1.f, 2.3);
 
 	defaultPage->EmptyLine();
 
 	defaultPage->Text("Some Text", false, RED);
 
-	defaultPage->Combo("Combo", &index, (char**)chars, 3);
+	defaultPage->Combo("Combo", &comboIndex, (char**)comboElements, 3);
 
 	defaultPage->Text("Logs:");
 
@@ -119,7 +64,7 @@ int main()
 
 	PageElement* pageElement = defaultPage->PageElem("Go to some Page");
 
-
+	//Create a new page
 	ConsolePage* newPage = con.createPage();
 
 	newPage->Text("Some other page", true);
@@ -127,8 +72,6 @@ int main()
 	newPage->Bool("Some Other Bool", &Boolean);
 
 	newPage->Int("Some Other Int", &Integer);
-
-	//PageElement* newPageElem = newPage->PageElem("Go To Default");
 
 	newPage->Selection({ "Option 1", "Option 2", "Something else" });
 
@@ -140,18 +83,16 @@ int main()
 
 	pageElement->setTargetPage(newPage);
 
-	//newPageElem->setTargetPage(defaultPage);
-
+	//Start the console in a new thread
 	con.start();
 
-	intElement->setOnValueChange([logs](newConsolePrinter::IntElement* el) -> void
+	//Add event listener to int element
+	intElement->setOnValueChange([logs](CCG::IntElement* el) -> void
 	{
 		logs->addLog("Value changed to: " + std::to_string(el->getValue()));
 	});
 
-
 	Sleep(5000);
-
 
 	logs->addLog("A");
 	Sleep(2000);
@@ -165,30 +106,4 @@ int main()
 	}
 
 	return 0;
-
-	char *screen = new char[100 * 100];
-	for (int i = 0; i < 100 * 100; i++) screen[i] = ' ';
-	HANDLE hConsole = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
-	SetConsoleActiveScreenBuffer(hConsole);
-	DWORD dwBytesWritten = 0;
-
-	//Print text easily
-	//sprintf(&screen[0], "   ");
-
-	sprintf_s(&screen[0], 100 * 100, "   d  ");
-
-
-	WriteConsoleOutputCharacterA(hConsole, screen, 100 * 100, { 0,0 }, &dwBytesWritten);
-
-	_SMALL_RECT Rect;
-	Rect.Top = 0;
-	Rect.Left = 0;
-	Rect.Bottom = 100 - 1;
-	Rect.Right = 100 - 1;
-
-	SetConsoleScreenBufferSize(hConsole, { 100, 100 });
-
-	SetConsoleWindowInfo(hConsole, true, &Rect);
 }
-
-

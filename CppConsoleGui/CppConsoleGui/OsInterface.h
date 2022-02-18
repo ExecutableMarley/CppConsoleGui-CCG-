@@ -2,6 +2,12 @@
 
 #include <string>
 
+/**
+ * @author Marley Arns
+ * @version 1.0
+ * @github: github.com/ExecutableMarley
+ */
+
 //Currently not used and hardcoded to run on windows
 
 
@@ -45,12 +51,6 @@ Everything os dependent inside here
 
 //Windows implemtation
 #if defined(_WIN32) || defined(_WIN64) //Checks for windows 32 and 64 bit
-
-/**
- * @author Marley Arns
- * @version 1.0
- * @github: github.com/ExecutableMarley
- */
 
 #include <Windows.h>
 

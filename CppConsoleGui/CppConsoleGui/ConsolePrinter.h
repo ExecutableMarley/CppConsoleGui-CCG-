@@ -12,7 +12,7 @@
 
 #include "OsInterface.h"
 
-namespace newConsolePrinter
+namespace CCG
 {
 	using namespace std;
 
@@ -1415,12 +1415,12 @@ namespace newConsolePrinter
 		{
 			callbackFunctions.clear();
 		}
-
+		
 		void executeRegisteredFunctions()
 		{
-			for (CallbackFunction cb : callbackFunctions)
+			for (CallbackFunction &cb : callbackFunctions)
 			{
-				if (cb.check())
+				if ((cb.check()))
 					cb.runFunction(this);
 			}
 		}

@@ -26,7 +26,7 @@ Todo:
 -multi line select element                     //Somewhat done
 */
 
-namespace newConsolePrinter
+namespace CCG
 {
 	using namespace std;
 
